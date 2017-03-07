@@ -6,7 +6,6 @@ Seq* getSeq(char * path)
 {
 	FILE* file=NULL;
 	file=fopen(path,"r");
-	12 23
 	Seq* seq=(Seq*)malloc(sizeof(Seq));
 	
 	printf("readng file: %s\n",path );
@@ -89,20 +88,20 @@ int **COUT1(Seq *S)
 	for(j=0;j<n+1;j++)
 	{
 		F[0][j]=DELTA_GAP*j;
-		printf("%d ",F[0][j]);
+		//printf("%d ",F[0][j]);
 	}
-	printf("\n");
+	//printf("\n");
 	for(i=1;i<m+1;i++)
 	{
 		F[i]=(int*)malloc(n*sizeof(int*));
 		F[i][0]=DELTA_GAP*i;
-		printf("%d ",F[i][0]);
+		//printf("%d ",F[i][0]);
 		for(j=1;j<n+1;j++)
 		{
 			F[i][j]=min(F[i][j-1]+DELTA_GAP,F[i-1][j]+DELTA_GAP,F[i-1][j-1]+((S->seqX[i-1]==S->seqY[j-1])?0:DELTA_IJ));
-			printf("%d ",F[i][j]);
+			//printf("%d ",F[i][j]);
 		}
-		printf("\n");
+		//printf("\n");
 	}
 	return F;
 		
@@ -116,32 +115,30 @@ int COUT2(Seq *S,int m,int n,int* mini)
 	for(j=0;j<n+1;j++)
 	{
 		F[0][j]=DELTA_GAP*j;
-		printf("%d ",F[0][j]);
+		//printf("%d ",F[0][j]);
 		
 	}
-	printf("\n");
+	//printf("\n");
 	
 	for(i=1;i<m+1;i++)
 	{
 		F[1][0]=DELTA_GAP*i;
-		printf("%d ",F[1][0]);
+		//printf("%d ",F[1][0]);
 		for(j=1;j<n+1;j++)
 		{
 			F[1][j]=min(F[1][j-1]+DELTA_GAP,F[0][j]+DELTA_GAP,F[0][j-1]+((S->seqX[i-1]==S->seqY[j-1])?0:DELTA_IJ));
-			printf("%d ",F[1][j]);
+			//printf("%d ",F[1][j]);
 		}
-		printf("\n");
-		for(j=0;j<n+1;j++)
-		{
-			F[0][j]=F[1][j];
-			
-		}
+		//printf("\n");
+		if(i<m)////to keep the line n-1
+			for(j=0;j<n+1;j++)
+				F[0][j]=F[1][j];
 	}
-	if(F[1][j]==F[0][j-1]+((S->seqX[i-1]==S->seqY[j-1])?0:DELTA_IJ))
+	if(F[1][n]==F[0][n-1]+((S->seqX[m-1]==S->seqY[n-1])?0:DELTA_IJ))
 	{
 		*mini=1;
 	}
-	else if(F[0][j]==F[0][j-1]+DELTA_GAP)
+	else if(F[0][n]==F[0][n-1]+DELTA_GAP)
 	{
 		*mini=0;
 	}
@@ -149,7 +146,7 @@ int COUT2(Seq *S,int m,int n,int* mini)
 	{
 		*mini=2;
 	}
-	*mini=20;
+	//*mini=20;
 	return F[1][n];
 		
 }
@@ -184,6 +181,57 @@ Nucleotides* SOL1(Seq *S,int** F)
 		{
 			S->gaps++;
 			addPair(N,S->seqX[--i],'-');
+		}
+	
+	}
+	S->M=M;
+	while(i>0)
+		addPair(N,S->seqX[i--],'-');
+	while(j>0)
+		addPair(N,'-',S->seqY[j--]);
+	return N;
+	
+}
+
+Nucleotides* SOL2(Seq *S)
+{
+	int i=S->sizeX,j=S->sizeY;
+	Nucleotides *M=(Nucleotides*)malloc(sizeof(Nucleotides));
+	M->nucleo1='X';
+	M->nucleo2='Y';
+	M->next=NULL;
+	Nucleotides *N=(Nucleotides*)malloc(sizeof(Nucleotides));
+	N->nucleo1='X';
+	N->nucleo2='Y';
+	N->next=NULL;
+	int mini;
+	while(i>0&&j>0)
+	{
+		//printf("\n");
+		printf("i=%d j=%d\n",i,j);
+		COUT2(S,i,j,&mini);
+		//printf("i=%d j=%d\n",i,j);
+		//printf("F(%d,%d)=%d, min=%d\n",i,j,COUT2(S,i,j,&mini),mini);
+		//printf("mini=%d\n",mini);
+		switch(mini)
+		{
+			case 1:
+				if(S->seqX[i-1]!=S->seqY[j-1]) 
+					S->errors++;
+				S->lenght++;
+				addPair(N,S->seqX[--i],S->seqY[--j]);
+				addPair(M,S->seqX[i],S->seqY[j]);
+			break;
+			case 0:
+				S->gaps++;
+				
+				addPair(N,'-',S->seqY[--j]);
+			break;
+			case 2:
+				S->gaps++;
+				addPair(N,S->seqX[--i],'-');
+			break;
+				
 		}
 	
 	}

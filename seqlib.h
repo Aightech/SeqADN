@@ -45,6 +45,10 @@ Seq* getSeq(char * path);
 int **COUT1(Seq *S);
 
 int COUT2(Seq *S,int m,int n,int* min);
+
+Nucleotides* SOL1(Seq *S,int** F);
+Nucleotides* SOL2(Seq *S);
+
 int min(int n1,int n2,int n3);
 Nucleotides* SOL1(Seq *S,int** F);
 void addPair(Nucleotides* N,char x,char y);
